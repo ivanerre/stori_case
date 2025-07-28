@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: fct_summary_per_customer
+    description: >
+      Aggregated summary of credit card transaction amounts per customer and transaction type.
+      Joins customers, customer_products, and credit_card_transactions.
+    columns:
+      - name: customer_id
+        description: Unique identifier for the customer
+        tests:
+          - not_null
+
+      - name: full_name
+        description: Full name of the customer
+
+      - name: txn_type
+        description: Type of transaction
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['purchase', 'payment']
+
+      - name: total_amount
+        description: Total amount summed by transaction type and customer
+        tests:
+          - not_null
+
+  - name: fct_customer_monthly_behavior
+    description: "Calculates the monthly transaction count per customer and their cumulative transaction count over time."
+    columns:
+      - name: customer_id
+        description: "The unique identifier for a customer."
+        tests:
+          - not_null
+
+      - name: transaction_month
+        description: "The first day of the month for the transaction."
+
+      - name: monthly_transaction_count
+        description: "The total number of transactions for a customer in a given month."
+
+      - name: running_total_of_transactions
+        description: "The cumulative sum of a customer's transactions up to and including the given month."
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= monthly_transaction_count"
